@@ -1,0 +1,9 @@
+%dw 2.0
+
+type auto_e07e39c7_c279_406c_8824_8d265ce9d060_Output_Payload = {
+  mail: String, 
+  contact: Number, 
+  age: Number, 
+  _?: Any
+}
+

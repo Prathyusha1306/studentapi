@@ -1,0 +1,29 @@
+#%RAML 1.0
+title: student details
+description: fetching student details
+
+/studentfulldetails:
+  get:
+    queryParameters:
+      accountID:
+        type: number
+        example: 2
+      name:
+        type: string
+        example: "Abdul Cook"
+    responses:
+      200:
+        body:
+          application/json:
+            type: object
+            properties:
+              city:
+                type: string
+                example: "Milwaukee"
+              country:
+                type: string
+                example: "United States"
+              
+
+
+          
