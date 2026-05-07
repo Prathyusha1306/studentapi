@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="f65fc2a4-57b1-4827-9a73-edd713c76199" >
+		<db:my-sql-connection host="iltdb.learn.mulesoft.com" port="3306" user="mule" password="mule" database="training" />
+	</db:config>
+	<http:listener-config name="HTTP_Listener_config2" doc:name="HTTP Listener config" doc:id="2a291668-8f3f-4f0d-aab7-8fbb1a631693" >
+		<http:listener-connection host="localhost" port="8082" />
+	</http:listener-config>
+	<flow name="student-settlementFlow" doc:id="e07e39c7-c279-406c-8824-8d265ce9d060" >
+		<http:listener doc:name="Listener" doc:id="7b9049a4-afce-4bf0-bf56-e185cdc53303" config-ref="HTTP_Listener_config2" path="/select"/>
+		<logger level="INFO" doc:name="Logger" doc:id="94b3ea20-8708-464a-b71f-aacec773f6f0" message="flow start"/>
+		<db:select doc:name="Select" doc:id="d648b5dc-3721-446d-a692-1e8f727e34ab" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from accounts where accountID = 2 and name = "Abdul Cook"]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="cd14a16a-927d-4767-8cdb-fd94ca94e65e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="f3a12a82-239e-4df7-a148-a49f56a98c05" >
+			<when expression="#[payload == []]">
+				<ee:transform doc:name="Transform Message" doc:id="df6606f0-9efd-4c9f-9fe3-0415c455f28b" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message" : "The Data you are searching for is not found in Database"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Transform Message" doc:id="ae604f56-7f2b-49af-80c6-e9f9a91e76f5" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"DATA EXIST"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="4d21452b-fcc4-4c6c-8177-15fcadbe24ff" message="flow ended"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="c2f47b80-f932-435b-b041-152073dbc2c3" type="ANY">
+				<logger level="ERROR" doc:name="Logger" doc:id="a0d87265-5873-455a-8d18-a4047f25eefd" message="#[error.description]"/>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>
